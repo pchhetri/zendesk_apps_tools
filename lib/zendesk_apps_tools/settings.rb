@@ -25,6 +25,17 @@ module ZendeskAppsTools
       end
     end
 
+    def find_settings_file(path)
+      try_paths = ['./', '../', 'settings/', '../settings/']
+
+      try_paths.reduce([]) do | memo, try_path |
+        memo << File.join(path, try_path, 'settings.yml')
+        memo << File.join(path, try_path, 'settings.json')
+      end.find do |settings_file|
+        File.exists?(settings_file)
+      end
+    end
+
     def get_settings_from_file(filepath, parameters)
       return {} if parameters.nil?
       return nil unless File.exist? filepath

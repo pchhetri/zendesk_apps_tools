@@ -115,33 +115,48 @@ module ZendeskAppsTools
     DEFAULT_SERVER_PATH = './'
     DEFAULT_CONFIG_PATH = './settings.yml'
     DEFAULT_SERVER_PORT = 4567
-    DEFAULT_APP_ID = 0
 
     desc 'server', 'Run a http server to serve the local app'
     method_option :path, default: DEFAULT_SERVER_PATH, required: false, aliases: '-p'
     method_option :config, default: DEFAULT_CONFIG_PATH, required: false, aliases: '-c'
     method_option :port, default: DEFAULT_SERVER_PORT, required: false
-    method_option :app_id, default: DEFAULT_APP_ID, required: false
-    def server
-      setup_path(options[:path])
-      manifest = app_package.manifest_json
+    def server(*app_paths)
+      if app_paths.length != 0 && options[:path] != DEFAULT_SERVER_PATH
+        say_error_and_exit "please either use -p or list the directory structure directly"
+      end
 
-      settings_helper = ZendeskAppsTools::Settings.new
+      if app_paths.length != 0 && options[:config] != DEFAULT_CONFIG_PATH
+        say_error_and_exit "cannot use -c in combination with multiple apps"
+      end
 
-      settings = settings_helper.get_settings_from_file options[:config], manifest['parameters']
+      if app_paths.empty?
+        app_paths << options[:path]
+      end
 
-      unless settings
-        settings = settings_helper.get_settings_from_user_input self, manifest['parameters']
+      apps = app_paths.map do | path |
+        package = ZendeskAppsSupport::Package.new(path)
+        settings_helper = ZendeskAppsTools::Settings.new
+
+        settings_file_path = settings_helper.find_settings_file(path)
+
+        settings = settings_helper.get_settings_from_file(settings_file_path, package.manifest_json['parameters']) if settings_file_path
+        settings = settings_helper.get_settings_from_user_input(self, package.manifest_json['parameters']) unless settings
+
+        {
+          package: package,
+          settings_file_path: settings_file_path,
+          settings: settings
+        }
+      end
+
+      if apps.empty?
+        say_error_and_exit "no valid apps found"
       end
 
       require 'zendesk_apps_tools/server'
       ZendeskAppsTools::Server.tap do |server|
         server.set :port, options[:port]
-        server.set :root, options[:path]
-        server.set :parameters, settings
-        server.set :manifest, manifest['parameters']
-        server.set :config, options[:config]
-        server.set :app_id, options[:app_id]
+        server.set :apps, apps
         server.run!
       end
     end

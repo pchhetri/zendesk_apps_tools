@@ -1,5 +1,7 @@
 require 'sinatra/base'
 require 'xat_support/package'
+require 'zendesk_apps_support/installed'
+include ZendeskAppsTools::PackageHelper
 
 module ZendeskAppsTools
   class Server < Sinatra::Base
@@ -11,36 +13,58 @@ module ZendeskAppsTools
       access_control_allow_origin
       content_type 'text/javascript'
 
-      if File.exists? settings.config
-        curr_mtime = File.stat(settings.config).mtime
-        if curr_mtime > last_mtime
-          settings_helper = ZendeskAppsTools::Settings.new
-          settings.parameters = settings_helper.get_settings_from_file(settings.config, settings.manifest)
-          last_mtime = curr_mtime
+      settings_helper = ZendeskAppsTools::Settings.new
+
+      appsjs = []
+      installations = []
+      order = {}
+
+      settings.apps.each_with_index do |app, index|
+        package = app[:package]
+        app_id = installation_id = -(index+1)
+
+        appsjs << package.compile_js(
+          app_id: app_id,
+          assets_dir: "http://localhost:#{settings.port}/",
+          locale: params['locale']
+        )
+
+        package.manifest_json['location'].each do |location, index|
+          order[location] ||= []
+          order[location] << app_id
         end
+
+        if (app[:settings_file_path] and File.exists?(app[:settings_file_path]))
+          curr_mtime = File.stat(app[:settings_file_path]).mtime
+          if (curr_mtime > last_mtime)
+            app[:settings] = settings_helper.get_settings_from_file(app[:settings_file_path], app[:manifest])
+            last_mtime = File.stat(app[:settings_file_path]).mtime
+          end
+        end
+
+        installations << ZendeskAppsSupport::Installation.new(
+          id: installation_id,
+          app_id: app_id,
+          app_name: package.name,
+          enabled: true,
+          requirements: package.requirements_json,
+          settings: app[:settings],
+          updated_at: Time.now.iso8601,
+          created_at: Time.now.iso8601
+        )
       end
 
-      package = ZendeskAppsSupport::Package.new(settings.root, false)
-      app_name = package.manifest_json['name'] || 'Local App'
-      installation = ZendeskAppsSupport::Installation.new(
-        id: settings.app_id,
-        app_id: settings.app_id,
-        app_name: app_name,
-        enabled: true,
-        requirements: package.requirements_json,
-        settings: settings.parameters.merge({title: app_name}),
-        updated_at: Time.now.iso8601,
-        created_at: Time.now.iso8601
-      )
+      installed = ZendeskAppsSupport::Installed.new(appsjs, installations)
+      installed.compile_js(installation_orders: order)
+    end
 
-      app_js = package.compile_js(
-        app_id: settings.app_id,
-        app_name: package.manifest_json['name'] || 'Local App',
-        assets_dir: "http://localhost:#{settings.port}/",
-        locale: params['locale']
-      )
+    get "/:file" do |file|
+      response.status = 404
+      'Deprecated. We support multiple apps now, please add app_id to the path for file, e.g. /0/' +file
+    end
 
-      ZendeskAppsSupport::Installed.new([app_js], [installation]).compile_js
+    get "/:app_id/:file" do |app_id, file|
+      send_file File.join(settings.apps[app_id.to_i][:path], 'assets', file)
     end
 
     get "/:file" do |file|
