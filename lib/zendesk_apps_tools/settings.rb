@@ -14,6 +14,7 @@ module ZendeskAppsTools
           input = user_input.get_value_from_stdin("Enter a value for required parameter '#{param['name']}':\n")
         else
           input = user_input.get_value_from_stdin("Enter a value for optional parameter '#{param['name']}' or press 'Return' to skip:\n", allow_empty: true)
+          input = nil if input.empty?
         end
 
         if param['type'] == 'checkbox'
