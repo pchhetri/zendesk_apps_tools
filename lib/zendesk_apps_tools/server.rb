@@ -1,7 +1,6 @@
 require 'sinatra/base'
 require 'xat_support/package'
 require 'zendesk_apps_support/installed'
-include ZendeskAppsTools::PackageHelper
 
 module ZendeskAppsTools
   class Server < Sinatra::Base
@@ -24,6 +23,7 @@ module ZendeskAppsTools
         app_id = installation_id = -(index+1)
 
         appsjs << package.compile_js(
+          app_name: package.manifest_json['name'] || 'Local App',
           app_id: app_id,
           assets_dir: "http://localhost:#{settings.port}/",
           locale: params['locale']
@@ -45,7 +45,7 @@ module ZendeskAppsTools
         installations << ZendeskAppsSupport::Installation.new(
           id: installation_id,
           app_id: app_id,
-          app_name: package.name,
+          app_name: package.manifest_json['name'] || 'Local App',
           enabled: true,
           requirements: package.requirements_json,
           settings: app[:settings],
