@@ -21,9 +21,10 @@ module ZendeskAppsTools
       settings.apps.each_with_index do |app, index|
         package = app[:package]
         app_id = installation_id = -(index+1)
+        app_name = package.manifest_json['name'] || 'Local App'
 
         appsjs << package.compile_js(
-          app_name: package.manifest_json['name'] || 'Local App',
+          app_name: app_name,
           app_id: app_id,
           assets_dir: "http://localhost:#{settings.port}/",
           locale: params['locale']
@@ -45,10 +46,10 @@ module ZendeskAppsTools
         installations << ZendeskAppsSupport::Installation.new(
           id: installation_id,
           app_id: app_id,
-          app_name: package.manifest_json['name'] || 'Local App',
+          app_name: app_name,
           enabled: true,
           requirements: package.requirements_json,
-          settings: app[:settings],
+          settings: app[:settings].merge({title: app_name}),
           updated_at: Time.now.iso8601,
           created_at: Time.now.iso8601
         )
