@@ -67,7 +67,7 @@ describe ZendeskAppsTools::Settings do
           'default' => '789'
         },
         {
-          'name' => 'skipped'
+          'name' => 'not_set'
         }
       ]
 
@@ -75,7 +75,8 @@ describe ZendeskAppsTools::Settings do
         'required'                  => 'xyz',
         'required_with_default'     => '123',
         'not_required'              => '456',
-        'not_required_with_default' => '789'
+        'not_required_with_default' => '789',
+        'not_set'                   => nil
       }
 
       allow(@user_input).to receive(:ask).with("Enter a value for required parameter 'required':\n").and_return('xyz')
