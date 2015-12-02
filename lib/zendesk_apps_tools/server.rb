@@ -26,7 +26,7 @@ module ZendeskAppsTools
         appsjs << package.compile_js(
           app_name: app_name,
           app_id: app_id,
-          assets_dir: "http://localhost:#{settings.port}/",
+          assets_dir: "http://localhost:#{settings.port}/#{app_id}/",
           locale: params['locale']
         )
 
@@ -73,7 +73,9 @@ module ZendeskAppsTools
     end
 
     get "/:app_id/:file" do |app_id, file|
-      send_file File.join(settings.apps[app_id.to_i][:path], 'assets', file)
+      # convert to postive and -1. So -1 => 0, -3 => 2, etc
+      id = (-app_id.to_i)-1
+      send_file File.join(settings.apps[id][:package].root, 'assets', file)
     end
 
     get "/:file" do |file|
