@@ -30,9 +30,17 @@ module ZendeskAppsTools
           locale: params['locale']
         )
 
-        package.manifest_json['location'].each do |location, index|
-          order[location] ||= []
-          order[location] << app_id
+        location = begin
+          locations = package.manifest_json['location']
+          locations = [ locations ] if locations.is_a?(String)
+          locations.is_a?(Hash) ? locations : { zendesk: locations }
+        end
+
+        location.each do |host, locations|
+          locations.each do |location, index|
+            order[location] ||= []
+            order[location] << app_id
+          end
         end
 
         if (app[:settings_file_path] and File.exists?(app[:settings_file_path]))
