@@ -72,7 +72,7 @@ module ZendeskAppsTools
 
         if !input && param['required']
           puts "\e[0;31m'#{param['name']}' is required but not specified in the config file.\e[0m\n"
-          return {}
+          input = nil
         end
 
         if param['type'] == 'checkbox'

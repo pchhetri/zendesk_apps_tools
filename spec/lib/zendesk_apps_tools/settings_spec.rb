@@ -183,7 +183,7 @@ describe ZendeskAppsTools::Settings do
         expect(@context.get_settings_from_file('spec/fixture/config/settings.yml', parameters)).to eq(settings)
       end
 
-      it 'returns nil because you forgot to specifiy a required field without a default' do
+      it 'sets nil because you forgot to specifiy a required field without a default' do
         parameters = [
           {
             'name' => 'required',
@@ -192,7 +192,7 @@ describe ZendeskAppsTools::Settings do
           }
         ]
 
-        expect(@context.get_settings_from_file('spec/fixture/config/settings.yml', parameters)).to be_nil
+        expect(@context.get_settings_from_file('spec/fixture/config/settings.yml', parameters)).to eq({'required'=>nil})
       end
     end
   end
