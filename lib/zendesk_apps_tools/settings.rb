@@ -37,7 +37,7 @@ module ZendeskAppsTools
       end
     end
 
-    def get_settings_from_file(filepath, parameters)
+    def get_settings_from_file(filepath, parameters, domain = false)
       return {} if parameters.nil?
       return nil unless File.exist? filepath
 
@@ -49,6 +49,8 @@ module ZendeskAppsTools
         else
           settings_data = YAML.load(settings_file)
         end
+
+        settings_data = settings_data[domain] if settings_data[domain] && domain
 
         settings_data.each do |index, setting|
           if setting.is_a?(Hash) || setting.is_a?(Array)
@@ -70,7 +72,7 @@ module ZendeskAppsTools
 
         if !input && param['required']
           puts "\e[0;31m'#{param['name']}' is required but not specified in the config file.\e[0m\n"
-          return nil
+          return {}
         end
 
         if param['type'] == 'checkbox'

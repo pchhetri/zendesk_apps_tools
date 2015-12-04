@@ -7,6 +7,7 @@ module ZendeskAppsTools
     set :protection, :except => :frame_options
     last_mtime = Time.new(0)
     ZENDESK_DOMAINS_REGEX = /^http(?:s)?:\/\/[a-z0-9-]+\.(?:zendesk|zopim|zd-(?:dev|master|staging))\.com$/
+    last_domain = nil
 
     get '/app.js' do
       access_control_allow_origin
@@ -43,11 +44,13 @@ module ZendeskAppsTools
           end
         end
 
-        if (app[:settings_file_path] and File.exists?(app[:settings_file_path]))
+        if app[:settings_file_path]
           curr_mtime = File.stat(app[:settings_file_path]).mtime
-          if (curr_mtime > last_mtime)
-            app[:settings] = settings_helper.get_settings_from_file(app[:settings_file_path], app[:package].manifest_json['parameters'])
+          curr_domain = params['subdomain']
+          if (curr_mtime > last_mtime || curr_domain != last_domain)
+            app[:settings] = settings_helper.get_settings_from_file(app[:settings_file_path], app[:package].manifest_json['parameters'], params['subdomain'])
             last_mtime = File.stat(app[:settings_file_path]).mtime
+            last_domain = curr_domain
           end
         end
 
