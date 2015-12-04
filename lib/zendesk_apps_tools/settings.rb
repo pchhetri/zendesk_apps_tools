@@ -69,7 +69,7 @@ module ZendeskAppsTools
         end
 
         if !input && param['required']
-          puts "'#{param['name']}' is required but not specified in the config file.\n"
+          puts "\e[0;31m'#{param['name']}' is required but not specified in the config file.\e[0m\n"
           return nil
         end
 
