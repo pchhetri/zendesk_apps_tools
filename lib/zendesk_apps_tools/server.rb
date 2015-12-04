@@ -46,7 +46,7 @@ module ZendeskAppsTools
         if (app[:settings_file_path] and File.exists?(app[:settings_file_path]))
           curr_mtime = File.stat(app[:settings_file_path]).mtime
           if (curr_mtime > last_mtime)
-            app[:settings] = settings_helper.get_settings_from_file(app[:settings_file_path], app[:manifest])
+            app[:settings] = settings_helper.get_settings_from_file(app[:settings_file_path], app[:package].manifest_json['parameters'])
             last_mtime = File.stat(app[:settings_file_path]).mtime
           end
         end
