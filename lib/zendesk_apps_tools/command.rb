@@ -140,7 +140,11 @@ module ZendeskAppsTools
         settings_file_path = settings_helper.find_settings_file(path)
 
         settings = settings_helper.get_settings_from_file(settings_file_path, package.manifest_json['parameters']) if settings_file_path
-        settings = settings_helper.get_settings_from_user_input(self, package.manifest_json['parameters']) unless settings
+
+        unless settings
+          settings = settings_helper.get_settings_from_user_input(self, package.manifest_json['parameters'])
+          settings_file_path = nil
+        end
 
         {
           package: package,
