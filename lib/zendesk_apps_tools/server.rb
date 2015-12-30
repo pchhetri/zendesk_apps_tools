@@ -71,15 +71,10 @@ module ZendeskAppsTools
       installed.compile_js(installation_orders: order)
     end
 
-    get "/:file" do |file|
-      response.status = 404
-      'Deprecated. We support multiple apps now, please add app_id to the path for file, e.g. /0/' +file
-    end
-
     get "/:app_id/:file" do |app_id, file|
-      # convert to postive and -1. So -1 => 0, -3 => 2, etc
-      id = (-app_id.to_i)-1
-      send_file File.join(settings.apps[id][:package].root, 'assets', file)
+      # convert to postive and substract 1. So -1 => 0, -3 => 2, etc
+      index = (-app_id.to_i)-1
+      send_file File.join(settings.apps[index][:package].root, 'assets', file)
     end
 
     get "/:file" do |file|

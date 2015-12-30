@@ -120,6 +120,7 @@ module ZendeskAppsTools
     method_option :path, default: DEFAULT_SERVER_PATH, required: false, aliases: '-p'
     method_option :config, default: DEFAULT_CONFIG_PATH, required: false, aliases: '-c'
     method_option :port, default: DEFAULT_SERVER_PORT, required: false
+    method_option :app_id, required: false
     def server(*app_paths)
       if !app_paths.empty? && options[:path] != DEFAULT_SERVER_PATH
         say_error_and_exit "please either use -p or list the directory structure directly"
@@ -127,6 +128,10 @@ module ZendeskAppsTools
 
       if !app_paths.empty? && options[:config] != DEFAULT_CONFIG_PATH
         say_error_and_exit "cannot use -c in combination with multiple apps"
+      end
+
+      if !app_paths.empty? && !options[:app_id].empty?
+        say_error_and_exit "cannot set app_id in combination with multiple apps"
       end
 
       if app_paths.empty?
