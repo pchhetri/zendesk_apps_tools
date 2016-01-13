@@ -130,7 +130,7 @@ module ZendeskAppsTools
         say_error_and_exit "cannot use -c in combination with multiple apps"
       end
 
-      if !app_paths.empty? && !options[:app_id].empty?
+      if !app_paths.empty? && !options[:app_id].nil?
         say_error_and_exit "cannot set app_id in combination with multiple apps"
       end
 
