@@ -166,7 +166,7 @@ describe ZendeskAppsTools::Settings do
         expect(@context.get_settings_from_file('spec/fixture/config/settings.yml', parameters)).to eq(settings)
       end
 
-      it 'returns the default because you forgot to specifiy a required field with a default' do
+      it 'returns the default because you forgot to specify a required field with a default' do
         parameters = [
           {
             'name' => 'required',

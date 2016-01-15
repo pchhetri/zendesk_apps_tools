@@ -35,7 +35,7 @@ module ZendeskAppsTools
       end
     end
 
-    def get_settings_from_file(filepath, parameters, domain = false)
+    def get_settings_from_file(filepath, parameters, domain = nil)
       return {} if parameters.nil?
       return nil unless File.exist? filepath
 
@@ -48,7 +48,7 @@ module ZendeskAppsTools
           settings_data = YAML.load(settings_file)
         end
 
-        settings_data = settings_data[domain] if settings_data[domain] && domain
+        settings_data = settings_data[domain] if settings_data[domain]
 
         settings_data.each do |index, setting|
           if setting.is_a?(Hash) || setting.is_a?(Array)
