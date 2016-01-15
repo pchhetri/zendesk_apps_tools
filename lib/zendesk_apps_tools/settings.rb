@@ -31,7 +31,7 @@ module ZendeskAppsTools
         memo << File.join(path, try_file)
         memo << File.join(path, try_file)
       end.find do |settings_file|
-        File.exists?(settings_file)
+        File.exist?(settings_file)
       end
     end
 
@@ -69,7 +69,7 @@ module ZendeskAppsTools
         end
 
         if !input && param['required']
-          puts "\e[0;31m'#{param['name']}' is required but not specified in the config file.\e[0m\n"
+          say "#{param['name']}' is required but not specified in the config file.", :red
           input = nil
         end
 

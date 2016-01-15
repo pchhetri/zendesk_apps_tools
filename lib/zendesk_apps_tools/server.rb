@@ -37,9 +37,9 @@ module ZendeskAppsTools
           locations.is_a?(Hash) ? locations : { zendesk: locations }
         end
 
-        location.each do |host, locations|
+        location.each do |_, locations|
           locations = [ locations ] if locations.is_a?(String)
-          locations.each do |location, index|
+          locations.each do |location|
             order[location] ||= []
             order[location] << app_id
           end
