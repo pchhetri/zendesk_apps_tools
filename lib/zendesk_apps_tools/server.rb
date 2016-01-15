@@ -39,9 +39,9 @@ module ZendeskAppsTools
 
         location.each do |_, locations|
           locations = [ locations ] if locations.is_a?(String)
-          locations.each do |location|
-            order[location] ||= []
-            order[location] << app_id
+          locations.each do |loc|
+            order[loc] ||= []
+            order[loc] << app_id
           end
         end
 

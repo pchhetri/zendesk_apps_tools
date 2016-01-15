@@ -56,8 +56,8 @@ module ZendeskAppsTools
           end
         end
       rescue => err
-        puts "Failed to load #{filepath}"
-        puts err.message
+        say "Failed to load #{filepath}", :red
+        say err.message, :red
         return nil
       end
 
