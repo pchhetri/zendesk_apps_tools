@@ -7,6 +7,7 @@ module ZendeskAppsTools
     end
 
     def say_error_and_exit(msg)
+      raise msg if ENV.key?('ZAT_DEV')
       say msg, :red
       exit 1
     end

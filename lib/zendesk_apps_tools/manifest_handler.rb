@@ -28,7 +28,7 @@ module ZendeskAppsTools
       manifest_json = File.read(manifest_json_path)
       @manifest = JSON.load(manifest_json)
     rescue => e
-      say(e.message, :red) and exit 1
+      say_error_and_exit e.message
     end
 
     def read_version

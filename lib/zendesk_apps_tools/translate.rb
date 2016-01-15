@@ -28,7 +28,7 @@ module ZendeskAppsTools
       en_json = JSON.parse(File.open("#{destination_root}/translations/en.json").read)
 
       package = en_json['app']['package']
-      say('No package defined inside en.json! Abort.', :red) and exit 1 unless package
+      say_error_and_exit('No package defined inside en.json! Abort.') unless package
       en_json['app'].delete('package')
 
       write_yml(en_json, app_name, package)
@@ -84,7 +84,7 @@ module ZendeskAppsTools
       en_json = JSON.parse(File.open("#{destination_root}/translations/en.json").read)
 
       package = en_json['app']['package']
-      say('No package defined inside en.json! Abort.', :red) and exit 1 unless package
+      say_error_and_exit('No package defined inside en.json! Abort.') unless package
 
       pseudo = build_pseudotranslation(en_json, package)
       write_json("translations/fr.json", pseudo)

@@ -10,6 +10,8 @@ require 'webmock/rspec'
 $LOAD_PATH.unshift(File.dirname(__FILE__) + '/../lib')
 $LOAD_PATH.unshift(File.dirname(__FILE__) + '/../lib/zendesk_apps_tools')
 
+ENV['ZAT_DEV'] = 'true'
+
 RSpec.configure do |config|
   config.run_all_when_everything_filtered = true
   config.filter_run :focus
