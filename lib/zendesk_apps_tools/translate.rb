@@ -49,9 +49,19 @@ module ZendeskAppsTools
 
     desc 'update', 'Update translation files from Zendesk'
     method_option :path, default: './', required: false
+    method_option :app_package, :type => :string, required: false
+    method_option :force, :type => :boolean, default: false, required: false
     def update(request_builder = Faraday.new)
       setup_path(options[:path]) if options[:path]
-      app_package = get_value_from_stdin('What is the package name for this app? (without app_)', valid_regex: /^[a-z_]+$/, error_msg: 'Invalid package name, try again:')
+
+      package_regex = /^[a-z_]+$/
+      app_package = package_regex.match(options[:app_package])[0] if options[:app_package]
+
+      app_package = get_value_from_stdin(
+        'What is the package name for this app? (without app_)',
+        valid_regex: package_regex,
+        error_msg: 'Invalid package name, try again:'
+      ) unless app_package
 
       key_prefix = "txt.apps.#{app_package}."
 
@@ -67,7 +77,10 @@ module ZendeskAppsTools
           translations    = JSON.parse(locale_response)['locale']['translations']
 
           locale_name = ZendeskAppsTools::LocaleIdentifier.new(locale['locale']).locale_id
-          write_json("#{destination_root}/translations/#{locale_name}.json", nest_translations_hash(translations, key_prefix))
+          write_json(
+            "#{destination_root}/translations/#{locale_name}.json",
+            nest_translations_hash(translations, key_prefix),
+            force: options[:force])
         end
         say('Translations updated', :green)
 
@@ -99,8 +112,8 @@ module ZendeskAppsTools
         @destination_stack << relative_to_original_destination_root(path) unless @destination_stack.last == path
       end
 
-      def write_json(filename, translations_hash)
-        create_file(filename, JSON.pretty_generate(translations_hash) + "\n")
+      def write_json(filename, translations_hash, options = {})
+        create_file(filename, JSON.pretty_generate(translations_hash) + "\n", options)
       end
 
       def nest_translations_hash(translations_hash, key_prefix)
