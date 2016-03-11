@@ -30,20 +30,6 @@ module ZendeskAppsTools
           locale: params['locale']
         )
 
-        location = begin
-          locations = package.manifest_json['location']
-          locations = [ locations ] if locations.is_a?(String)
-          locations.is_a?(Hash) ? locations : { zendesk: locations }
-        end
-
-        location.each do |_, locations|
-          locations = [ locations ] if locations.is_a?(String)
-          locations.each do |loc|
-            order[loc] ||= []
-            order[loc] << app_id
-          end
-        end
-
         if app[:settings_file_path]
           curr_mtime = File.stat(app[:settings_file_path]).mtime
           curr_domain = params['subdomain']
@@ -67,7 +53,7 @@ module ZendeskAppsTools
       end
 
       installed = ZendeskAppsSupport::Installed.new(appsjs, installations)
-      installed.compile_js(installation_orders: order)
+      installed.compile_js()
     end
 
     get "/:app_id/:file" do |app_id, file|
