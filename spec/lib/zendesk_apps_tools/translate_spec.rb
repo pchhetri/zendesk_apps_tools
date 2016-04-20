@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'thor/actions'
 require 'translate'
 
 describe ZendeskAppsTools::Translate do
@@ -7,9 +8,8 @@ describe ZendeskAppsTools::Translate do
       root = 'spec/fixture/i18n_app_to_yml'
       target_yml = "#{root}/translations/en.yml"
       File.delete(target_yml) if File.exist?(target_yml)
-      translate = ZendeskAppsTools::Translate.new
-      translate.setup_path(root)
-      translate.to_yml
+      subject.setup_path(root)
+      subject.to_yml
 
       expect(File.read(target_yml)).to eq(File.read("#{root}/translations/expected.yml"))
       File.delete(target_yml) if File.exist?(target_yml)
@@ -21,9 +21,9 @@ describe ZendeskAppsTools::Translate do
       root = 'spec/fixture/i18n_app_to_json'
       target_json = "#{root}/translations/en.json"
       File.delete(target_json) if File.exist?(target_json)
-      translate = ZendeskAppsTools::Translate.new
-      translate.setup_path(root)
-      translate.to_json
+
+      subject.setup_path(root)
+      subject.to_json
 
       expect(File.read(target_json)).to eq(File.read("#{root}/translations/expected.json"))
       File.delete(target_json) if File.exist?(target_json)
@@ -68,8 +68,7 @@ describe ZendeskAppsTools::Translate do
           'errormessage' => 'General error'
         }
 
-        context = ZendeskAppsTools::Translate.new
-        expect(context.nest_translations_hash(translations, '')).to eq(result)
+        expect(subject.nest_translations_hash(translations, '')).to eq(result)
       end
     end
   end
@@ -78,29 +77,67 @@ describe ZendeskAppsTools::Translate do
   # refactoring of the cucumber setup and addition of vcr or something similar
   # This is happy day only
   describe '#update' do
-    it 'fetches locales, translations and generates json files for each' do
-      translate = ZendeskAppsTools::Translate.new
-      allow(translate).to receive(:say)
-      allow(translate).to receive(:ask).with('What is the package name for this app? (without app_)').and_return('my_app')
-      allow(translate).to receive(:create_file)
+    let(:app_dir) { 'spec/fixture/i18n_app_update' }
 
-      expect(translate).to receive(:nest_translations_hash).once.and_return({})
+    before :each do
+      allow(subject).to receive(:write_json)
+      allow(subject).to receive(:nest_translations_hash).once.and_return({})
 
-      test = Faraday.new do |builder|
+      subject.setup_path(app_dir)
+
+      @test = Faraday.new do |builder|
         builder.adapter :test do |stub|
           stub.get('/api/v2/locales/agent.json') do
-            [200, {}, JSON.dump('locales' => [{ 'url' => 'https://support.zendesk.com/api/v2/rosetta/locales/1.json',
-                                                'locale' => 'en' }])]
+            [200, {}, JSON.dump('locales' => [{ 'url' => 'https://support.zendesk.com/api/v2/rosetta/locales/fr.json',
+                                                'locale' => 'fr' }])]
           end
-          stub.get('/api/v2/rosetta/locales/1.json?include=translations&packages=app_my_app') do
+          stub.get('/api/v2/rosetta/locales/fr.json?include=translations&packages=app_my_app') do
             [200, {}, JSON.dump('locale' => { 'translations' =>
                                                     { 'app.description' => 'my awesome app' } })]
           end
         end
       end
-
-      translate.update(test)
     end
+
+    it 'fetches locales, translations and generates json files for each' do
+      allow(subject).to receive(:ask).with('What is the package name for this app? (without app_)').and_return('my_app')
+
+      expect(subject).to receive(:write_json).with("#{app_dir}/translations/fr.json", anything, anything)
+
+      subject.update @test
+    end
+
+    context 'with an app package supplied as an option' do
+
+      it 'performs the update without asking for input' do
+        subject.options = { app_package: 'my_app' }
+
+        expect(subject).not_to receive(:ask).with('What is the package name for this app? (without app_)')
+
+        expect { subject.update @test }.to output(/Translations updated/).to_stdout
+      end
+
+    end
+
+    describe 'when there is an existing translation file for a locale' do
+      before(:each) do
+        allow(subject).to receive(:write_json).and_call_original
+        subject.options = { app_package: 'my_app' }
+      end
+
+      it 'prompts the user to manually resolve the file write conflict' do
+        # allow_any_instance_of(Thor::Actions::CreateFile).to receive(:exists?) { true }
+        expect { subject.update @test }.to output(/conflict/).to_stdout
+      end
+
+      it 'overwrites the file if the force option is supplied' do
+        subject.options[:force] = true
+
+        expect { subject.update @test }.to output(/Translations updated/).to_stdout
+      end
+
+    end
+
   end
 
   describe "#pseudotranslate" do
@@ -108,9 +145,9 @@ describe ZendeskAppsTools::Translate do
       root = 'spec/fixture/i18n_app_pseudotranslate'
       target_json = "#{root}/translations/fr.json"
       File.delete(target_json) if File.exist?(target_json)
-      translate = ZendeskAppsTools::Translate.new
-      translate.setup_path(root)
-      translate.pseudotranslate
+
+      subject.setup_path(root)
+      subject.pseudotranslate
 
       expect(File.read(target_json)).to eq(File.read("#{root}/translations/expected.json"))
       File.delete(target_json) if File.exist?(target_json)

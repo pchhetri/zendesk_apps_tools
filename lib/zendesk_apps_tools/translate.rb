@@ -77,6 +77,7 @@ module ZendeskAppsTools
           translations    = JSON.parse(locale_response)['locale']['translations']
 
           locale_name = ZendeskAppsTools::LocaleIdentifier.new(locale['locale']).locale_id
+
           write_json(
             "#{destination_root}/translations/#{locale_name}.json",
             nest_translations_hash(translations, key_prefix),
@@ -118,6 +119,8 @@ module ZendeskAppsTools
 
       def nest_translations_hash(translations_hash, key_prefix)
         result = {}
+
+        return result if translations_hash.empty?
 
         translations_hash.each do |full_key, value|
           parts       = full_key.gsub(key_prefix, '').split('.')
