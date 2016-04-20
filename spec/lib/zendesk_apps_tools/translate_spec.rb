@@ -77,13 +77,18 @@ describe ZendeskAppsTools::Translate do
   # refactoring of the cucumber setup and addition of vcr or something similar
   # This is happy day only
   describe '#update' do
-    let(:app_dir) { 'spec/fixture/i18n_app_update' }
-
     before :each do
       allow(subject).to receive(:write_json)
       allow(subject).to receive(:nest_translations_hash).once.and_return({})
 
-      subject.setup_path(app_dir)
+      root = 'spec/fixture/i18n_app_update'
+      target_json = "#{root}/translations/fr.json"
+      org_json = "#{root}/translations/fr_expected.json"
+      subject.setup_path(root)
+
+      # Copy fr_expected.json to fr.json
+      File.delete(target_json) if File.exist?(target_json)
+      File.write(target_json, File.read(org_json))
 
       @test = Faraday.new do |builder|
         builder.adapter :test do |stub|
@@ -102,7 +107,7 @@ describe ZendeskAppsTools::Translate do
     it 'fetches locales, translations and generates json files for each' do
       allow(subject).to receive(:ask).with('What is the package name for this app? (without app_)').and_return('my_app')
 
-      expect(subject).to receive(:write_json).with("#{app_dir}/translations/fr.json", anything, anything)
+      expect(subject).to receive(:write_json).with("translations/fr.json", anything, anything)
 
       subject.update @test
     end
@@ -126,7 +131,8 @@ describe ZendeskAppsTools::Translate do
       end
 
       it 'prompts the user to manually resolve the file write conflict' do
-        # allow_any_instance_of(Thor::Actions::CreateFile).to receive(:exists?) { true }
+        allow(subject.shell).to receive(:ask).and_return 'y'
+
         expect { subject.update @test }.to output(/conflict/).to_stdout
       end
 

@@ -54,7 +54,7 @@ module ZendeskAppsTools
     def update(request_builder = Faraday.new)
       setup_path(options[:path]) if options[:path]
 
-      package_regex = /^[a-z_]+$/
+      package_regex = /^\w+$/
       app_package = package_regex.match(options[:app_package])[0] if options[:app_package]
 
       app_package = get_value_from_stdin(
@@ -79,7 +79,7 @@ module ZendeskAppsTools
           locale_name = ZendeskAppsTools::LocaleIdentifier.new(locale['locale']).locale_id
 
           write_json(
-            "#{destination_root}/translations/#{locale_name}.json",
+            "translations/#{locale_name}.json",
             nest_translations_hash(translations, key_prefix),
             force: options[:force])
         end
