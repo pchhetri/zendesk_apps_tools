@@ -3,7 +3,7 @@ Feature: create a template for a new zendesk app
   Scenario: Create a new app in an existing directory
     Given an app directory "tmp/aruba" exists
     And I move to the app directory
-    When I run "zat new" command with the following details:
+    When I run "xat new" command with the following details:
       | author name  | John Citizen      |
       | author email | john@example.com  |
       | author url   | http://myapp.com  |
@@ -13,9 +13,9 @@ Feature: create a template for a new zendesk app
    Then the app file "manifest.json" is created
    And I reset the working directory
 
-   Scenario: create a template for a new zendesk app by running 'zat new' command
+   Scenario: create a template for a new zendesk app by running 'xat new' command
      Given an app directory "tmp/aruba" exists
-     When I run "zat new" command with the following details:
+     When I run "xat new" command with the following details:
        | author name  | John Citizen      |
        | author email | john@example.com  |
        | author url   | http://myapp.com  |
@@ -86,10 +86,10 @@ Feature: create a template for a new zendesk app
  }
  """
 
- Scenario: create a template for a new iframe only app by running 'zat new --v2' command
+ Scenario: create a template for a new iframe only app by running 'xat new --v2' command
    Given an app directory "tmp/aruba" exists
    And I move to the app directory
-   When I run "zat new --v2" command with the following details:
+   When I run "xat new --v2" command with the following details:
      | author name  | John Citizen      |
      | author email | john@example.com  |
      | author url   | http://myapp.com  |

@@ -20,7 +20,7 @@ end
 Given /^an app is created in directory "(.*?)"$/ do |app_dir|
   steps %(
     Given an app directory "#{app_dir}" exists
-    And I run "zat new" command with the following details:
+    And I run "xat new" command with the following details:
       | author name  | John Citizen      |
       | author email | john@example.com  |
       | author url   | http://myapp.com  |

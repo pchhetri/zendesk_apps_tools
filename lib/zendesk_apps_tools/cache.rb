@@ -1,6 +1,6 @@
 module ZendeskAppsTools
   module Cache
-    CACHE_FILE_NAME = '.zat'
+    CACHE_FILE_NAME = '.xat'
 
     def save_cache(hash)
       return if options[:zipfile]

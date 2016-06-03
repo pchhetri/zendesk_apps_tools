@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name        = 'xat'
   s.version     = '1.32.0'
-  s.executables << 'zat'
+  s.executables << 'xat'
   s.platform    = Gem::Platform::RUBY
   s.license     = 'Apache License Version 2.0'
   s.authors     = ['Olaf Kwant']
