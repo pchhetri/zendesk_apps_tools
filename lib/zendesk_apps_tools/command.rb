@@ -5,7 +5,7 @@ require 'net/http'
 require 'json'
 require 'faraday'
 require 'io/console'
-require 'zendesk_apps_support'
+require 'xat_support'
 
 require 'zendesk_apps_tools/command_helpers'
 
