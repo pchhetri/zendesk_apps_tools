@@ -1,5 +1,5 @@
 require 'sinatra/base'
-require 'xat_support/package'
+require 'zendesk_apps_support/package'
 
 module ZendeskAppsTools
   class Server < Sinatra::Base
