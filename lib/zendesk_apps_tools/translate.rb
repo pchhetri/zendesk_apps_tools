@@ -2,7 +2,7 @@ require 'thor'
 require 'json'
 require 'zendesk_apps_tools/common'
 require 'zendesk_apps_tools/locale_identifier'
-require 'zendesk_apps_support'
+require 'xat_support'
 require 'yaml'
 
 module ZendeskAppsTools

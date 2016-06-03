@@ -1,5 +1,5 @@
 module ZendeskAppsTools
-  require 'zendesk_apps_support'
+  require 'xat_support'
 
   module PackageHelper
     include ZendeskAppsSupport
