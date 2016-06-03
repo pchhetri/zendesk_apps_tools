@@ -1,12 +1,12 @@
 Gem::Specification.new do |s|
-  s.name        = 'zendesk_apps_tools'
+  s.name        = 'xat'
   s.version     = '1.32.0'
   s.executables << 'zat'
   s.platform    = Gem::Platform::RUBY
   s.license     = 'Apache License Version 2.0'
-  s.authors     = ['James A. Rosen', 'Kenshiro Nakagawa', 'Shajith Chacko', 'Likun Liu']
-  s.email       = ['dev@zendesk.com']
-  s.homepage    = 'http://github.com/zendesk/zendesk_apps_tools'
+  s.authors     = ['Olaf Kwant']
+  s.email       = ['okwant@zendesk.com']
+  s.homepage    = 'https://github.com/ocke/xat'
   s.summary     = 'Tools to help you develop Zendesk Apps.'
   s.description = s.summary
 
