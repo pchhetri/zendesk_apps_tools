@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    zendesk_apps_tools (1.32.0)
+    xat (1.32.0)
       faraday (~> 0.9.2)
       rubyzip (~> 0.9.1)
       sinatra (~> 1.4.6)
@@ -94,7 +94,7 @@ DEPENDENCIES
   cucumber
   rspec
   webmock
-  zendesk_apps_tools!
+  xat!
 
 BUNDLED WITH
    1.12.2
