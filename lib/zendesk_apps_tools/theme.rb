@@ -25,13 +25,18 @@ module ZendeskAppsTools
 
     no_commands do
       def initial_upload
+        say_status 'Generating', 'Generating theme from local files'
         payload = generate_payload.merge(role: options[:role])
+        say_status 'Generating', 'OK'
+        say_status 'Uploading', 'Uploading theme'
         connection = get_connection(nil)
+        connection.use Faraday::Response::RaiseError
         connection.put do |req|
           req.url '/hc/api/internal/theming/local_preview'
           req.body = JSON.dump(payload)
           req.headers['Content-Type'] = 'application/json'
         end
+        say_status 'Uploading', 'OK'
       rescue Faraday::Error::ClientError => e
         say_error_and_exit e.message
       end
