@@ -2,6 +2,7 @@
 module ZendeskAppsTools
   module Common
     module ClassMethods
+      DEFAULT_SERVER_PORT = '4567'
       def shared_options(except: [])
         unless except.include? :path
           method_option :path,
@@ -20,6 +21,15 @@ module ZendeskAppsTools
                         default: false,
                         desc: 'Experimental: Never prompt for input, expecting all input from the original invocation. Many '\
                               'commands invoked with this option will just crash.'
+        end
+      end
+
+      def sinatra_options(except: [])
+        unless except.include? :port
+          method_option :port, default: DEFAULT_SERVER_PORT, required: false
+        end
+        unless except.include? :bind
+          method_option :bind, required: false
         end
       end
     end

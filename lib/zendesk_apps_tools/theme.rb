@@ -1,11 +1,15 @@
 # frozen_string_literal: true
 
+require 'zendesk_apps_tools/theming/common'
+
 module ZendeskAppsTools
   class Theme < Thor
     include Thor::Actions
     include ZendeskAppsTools::CommandHelpers
+    include ZendeskAppsTools::Theming::Common
     desc 'preview', 'Preview a theme in development'
     shared_options(except: %i[clean unattended])
+    sinatra_options
     method_option :role,
                   type: :string,
                   enum: %w[manager agent end_user anonymous],
@@ -16,14 +20,18 @@ module ZendeskAppsTools
       ensure_manifest!
       require 'faraday'
       initial_upload
-      puts 'Preview!'
+      start_server
     end
 
     no_commands do
       def initial_upload
-        payload = generate_payload
+        payload = generate_payload.merge(role: options[:role])
         connection = get_connection(nil)
-        connection.put '/hc/api/internal/theming/local_preview', JSON.dump(payload)
+        connection.put do |req|
+          req.url '/hc/api/internal/theming/local_preview'
+          req.body = JSON.dump(payload)
+          req.headers['Content-Type'] = 'application/json'
+        end
       rescue Faraday::Error::ClientError => e
         say_error_and_exit e.message
       end
@@ -31,9 +39,11 @@ module ZendeskAppsTools
       def generate_payload
         payload = {}
         templates = Dir.glob(theme_package_path('templates', '*.hbs'))
+        templates_payload = {}
         templates.each do |template|
-          payload[File.basename(template, '.hbs')] = File.read(template)
+          templates_payload[File.basename(template, '.hbs')] = File.read(template)
         end
+        payload['templates'] = templates_payload unless templates_payload.empty?
         assets = Dir.glob(theme_package_path('assets', '*'))
         asset_payload = {}
         assets.each do |asset|
@@ -45,14 +55,6 @@ module ZendeskAppsTools
         payload
       end
 
-      def manifest
-        full_manifest_path = theme_package_path('manifest.json')
-        @manifest ||= JSON.parse(File.read(full_manifest_path))
-      rescue Errno::ENOENT
-        say_error_and_exit "There's no manifest file in #{full_manifest_path}"
-      rescue JSON::ParserError
-        say_error_and_exit "The manifest file is invalid at #{full_manifest_path}"
-      end
       alias_method :ensure_manifest!, :manifest
 
       def javascript
@@ -60,41 +62,15 @@ module ZendeskAppsTools
         @javascript ||= File.read(filename) if File.exist?(filename)
       end
 
-      def stylesheet_content
-        style_css = theme_package_path('style.css')
-        return nil unless File.exist?(style_css)
-        zass_source = File.read(style_css)
-        require 'zendesk_apps_tools/theming/zass_formatter'
-        ZendeskAppsTools::Theming::ZassFormatter.format(zass_source, settings_hash)
-      end
-
-      def theme_package_path(*file)
-        File.expand_path(File.join(app_dir, *file))
-      end
-
-      def settings_hash
-        manifest['settings'].flat_map { |setting_group| setting_group['variables'] }.each_with_object({}) do |variable, result|
-          result[variable.fetch('identifier')] = value_for_setting(variable.fetch('type'), variable.fetch('value'))
+      def start_server
+        require 'zendesk_apps_tools/theming/server'
+        ZendeskAppsTools::Theming::Server.tap do |server|
+          server.set :bind, options[:bind] if options[:bind]
+          server.set :port, options[:port]
+          server.set :root, app_dir
+          server.set :public_folder, app_dir
+          server.run!
         end
-      end
-
-      def value_for_setting(type, value)
-        return value unless type == 'file'
-        url_for(theme_package_path(value))
-      end
-
-      def url_for(package_file)
-        relative_path = Pathname.new(package_file).relative_path_from(Pathname.new(File.expand_path(app_dir))).cleanpath
-        path_parts = recursive_pathname_split(relative_path)
-        path_parts.shift
-        "http://localhost:4567/guide/#{path_parts.join('/')}"
-      end
-
-      def recursive_pathname_split(relative_path)
-        split_path = relative_path.split
-        joined_directories = split_path[0]
-        return split_path if split_path[0] == joined_directories.split[0]
-        [*recursive_pathname_split(joined_directories), split_path[1]]
       end
     end
   end
