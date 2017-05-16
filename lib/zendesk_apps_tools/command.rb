@@ -17,6 +17,9 @@ module ZendeskAppsTools
     desc 'translate SUBCOMMAND', 'Manage translation files', hide: true
     subcommand 'translate', Translate
 
+    desc 'theme SUBCOMMAND', 'Development tools for Zendesk Themes', hide: true
+    subcommand 'theme', Theme
+
     desc 'bump SUBCOMMAND', 'Bump version for app', hide: true
     subcommand 'bump', Bump
 
@@ -197,10 +200,6 @@ module ZendeskAppsTools
           say_status 'warning', warning, :yellow
         end
       end
-    end
-
-    def setup_path(path)
-      @destination_stack << relative_to_original_destination_root(path) unless @destination_stack.last == path
     end
 
     def settings
