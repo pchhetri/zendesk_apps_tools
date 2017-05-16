@@ -9,7 +9,7 @@ module ZendeskAppsTools
       include Common
 
       get '/livereload' do
-        if Faye::WebSocket.websocket?(env)
+        if settings.livereload && Faye::WebSocket.websocket?(env)
           ws = Faye::WebSocket.new(env)
 
           new_callback = ->(filename) { ws.send(JSON.dump(command: 'reload', path: filename)) }
@@ -45,7 +45,7 @@ module ZendeskAppsTools
           # Return async Rack response
           ws.rack_response
         else
-          [500, {}, 'Oops']
+          [500, {}, 'Websocket Server Error']
         end
       end
 

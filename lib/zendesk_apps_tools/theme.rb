@@ -15,7 +15,9 @@ module ZendeskAppsTools
                   type: :string,
                   enum: %w[manager agent end_user anonymous],
                   default: 'manager',
-                  desc: 'The role for the preview URL'
+                  desc: 'The role for the preview URL',
+                  aliases: '-r'
+    method_option :livereload, type: :boolean, default: true, desc: 'Enable or disable live-reloading the preview when a change is made.'
     def preview
       setup_path(options[:path])
       ensure_manifest!
@@ -89,18 +91,21 @@ module ZendeskAppsTools
 
       def start_server(callbacks_after_upload)
         require 'zendesk_apps_tools/theming/server'
-        require 'rack-livereload'
-        require 'faye/websocket'
-        Faye::WebSocket.load_adapter('thin')
+        if options[:livereload]
+          require 'rack-livereload'
+          require 'faye/websocket'
+          Faye::WebSocket.load_adapter('thin')
+        end
 
         ZendeskAppsTools::Theming::Server.tap do |server|
           server.set :bind, options[:bind] if options[:bind]
           server.set :port, options[:port]
           server.set :root, app_dir
           server.set :public_folder, app_dir
+          server.set :livereload, options[:livereload]
           server.set :callbacks_after_load, callbacks_after_upload
           server.set :callback_map, {}
-          server.use Rack::LiveReload, live_reload_port: 4567
+          server.use Rack::LiveReload, live_reload_port: 4567 if options[:livereload]
           server.run!
         end
       end
