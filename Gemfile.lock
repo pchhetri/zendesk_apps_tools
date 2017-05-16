@@ -3,7 +3,7 @@ PATH
   specs:
     zendesk_apps_tools (2.0.2)
       faraday (~> 0.9.2)
-      faye-websocket
+      faye-websocket (~> 0.10.7)
       listen (~> 2.10)
       rack-livereload
       rubyzip (~> 1.2.1)
