@@ -38,6 +38,7 @@ module ZendeskAppsTools
           req.headers['Content-Type'] = 'application/json'
         end
         say_status 'Uploading', 'OK'
+        say_status 'Ready', "#{connection.url_prefix}hc/local_preview"
       rescue Faraday::Error::ClientError => e
         say_error_and_exit e.message
       end
