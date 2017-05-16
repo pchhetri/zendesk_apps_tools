@@ -50,8 +50,6 @@ module ZendeskAppsTools
         end
         payload['templates'] = templates_payload unless templates_payload.empty? && asset_payload.empty?
         payload['templates']['assets'] = JSON.dump(asset_payload) unless asset_payload.empty?
-        payload['js'] = url_for(theme_package_path('script.js')) if File.file?(theme_package_path('script.js'))
-        payload['css'] = url_for(theme_package_path('style.css')) if File.file?(theme_package_path('style.css'))
         payload
       end
 
