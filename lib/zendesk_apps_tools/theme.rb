@@ -43,13 +43,13 @@ module ZendeskAppsTools
         templates.each do |template|
           templates_payload[File.basename(template, '.hbs')] = File.read(template)
         end
-        payload['templates'] = templates_payload unless templates_payload.empty?
         assets = Dir.glob(theme_package_path('assets', '*'))
         asset_payload = {}
         assets.each do |asset|
           asset_payload[File.basename(asset)] = url_for(asset)
         end
-        payload['assets'] = asset_payload unless asset_payload.empty?
+        payload['templates'] = templates_payload unless templates_payload.empty? && asset_payload.empty?
+        payload['templates']['assets'] = JSON.dump(asset_payload) unless asset_payload.empty?
         payload['js'] = url_for(theme_package_path('script.js')) if File.file?(theme_package_path('script.js'))
         payload['css'] = url_for(theme_package_path('style.css')) if File.file?(theme_package_path('style.css'))
         payload
