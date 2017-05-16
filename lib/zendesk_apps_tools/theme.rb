@@ -60,7 +60,9 @@ module ZendeskAppsTools
           end
           if need_upload
             full_upload
-            callbacks_after_upload.each(&:call)
+          end
+          callbacks_after_upload.each do |callback|
+            callback.call(modified.first || added.first || removed.first)
           end
         end
         listener.start

@@ -12,24 +12,25 @@ module ZendeskAppsTools
         if Faye::WebSocket.websocket?(env)
           ws = Faye::WebSocket.new(env)
 
-          puts 'OPEN'
-          ws.send(JSON.dump(
-            command: 'hello',
-            protocols: [
-              'http://livereload.com/protocols/official-7',
-              'http://livereload.com/protocols/official-8',
-              'http://livereload.com/protocols/official-9',
-              'http://livereload.com/protocols/2.x-origin-version-negotiation',
-              'http://livereload.com/protocols/2.x-remote-control'],
-            serverName: 'ZAT LiveReload 2'
-          ))
-
-          new_callback = -> { ws.send(JSON.dump(command: 'reload')) }
+          new_callback = ->(filename) { ws.send(JSON.dump(command: 'reload', path: filename)) }
           settings.callback_map[ws] = new_callback
           settings.callbacks_after_load.push(new_callback)
 
           ws.onmessage = lambda do |event|
-            ws.send(event.data)
+            message = JSON.parse(event.data)
+            if message['command'] == 'hello'
+              ws.send(JSON.dump(
+                command: 'hello',
+                protocols: [
+                  'http://livereload.com/protocols/official-7',
+                  'http://livereload.com/protocols/official-8',
+                  'http://livereload.com/protocols/official-9',
+                  'http://livereload.com/protocols/2.x-origin-version-negotiation',
+                  'http://livereload.com/protocols/2.x-remote-control'
+                ],
+                serverName: 'ZAT LiveReload 2'
+              ))
+            end
           end
 
           ws.onclose = lambda do |event|
