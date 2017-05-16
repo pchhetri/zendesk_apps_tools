@@ -7,6 +7,39 @@ module ZendeskAppsTools
   module Theming
     class Server < Sinatra::Base
       include Common
+
+      get '/websocket' do
+        if Faye::WebSocket.websocket?(env)
+          ws = Faye::WebSocket.new(env)
+
+          puts 'OPEN'
+          ws.send(JSON.dump(
+            command: 'hello',
+            protocols: [
+              'http://livereload.com/protocols/official-7',
+              'http://livereload.com/protocols/official-8',
+              'http://livereload.com/protocols/official-9',
+              'http://livereload.com/protocols/2.x-origin-version-negotiation',
+              'http://livereload.com/protocols/2.x-remote-control'],
+            serverName: 'ZAT LiveReload 2'
+          ))
+
+          ws.onmessage do |event|
+            ws.send(event.data)
+          end
+
+          ws.onclose do |event|
+            p [:close, event.code, event.reason]
+            ws = nil
+          end
+
+          # Return async Rack response
+          ws.rack_response
+        else
+          [500, {}, 'Oops']
+        end
+      end
+
       get '/guide/style.css' do
         content_type 'text/css'
         style_css = theme_package_path('style.css')

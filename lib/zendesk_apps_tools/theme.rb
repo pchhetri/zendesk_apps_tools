@@ -82,11 +82,16 @@ module ZendeskAppsTools
 
       def start_server
         require 'zendesk_apps_tools/theming/server'
+        require 'rack-livereload'
+        require 'faye/websocket'
+        Faye::WebSocket.load_adapter('thin')
+
         ZendeskAppsTools::Theming::Server.tap do |server|
           server.set :bind, options[:bind] if options[:bind]
           server.set :port, options[:port]
           server.set :root, app_dir
           server.set :public_folder, app_dir
+          server.use Rack::LiveReload, live_reload_port: 4567
           server.run!
         end
       end

@@ -22,6 +22,8 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'zendesk_apps_support', '~> 3.4.3'
   s.add_runtime_dependency 'sinatra-cross_origin', '~> 0.3.1'
   s.add_runtime_dependency 'listen', '~> 2.10'
+  s.add_runtime_dependency 'rack-livereload'
+  s.add_runtime_dependency 'faye-websocket'
 
   s.add_development_dependency 'cucumber'
   s.add_development_dependency 'aruba'
