@@ -40,8 +40,8 @@ module ZendeskAppsTools
           asset_payload[File.basename(asset)] = url_for(asset)
         end
         payload['assets'] = asset_payload unless asset_payload.empty?
-        payload['js'] = javascript if javascript
-        payload['css'] = stylesheet_content if stylesheet_content
+        payload['js'] = url_for(theme_package_path('script.js')) if File.file?(theme_package_path('script.js'))
+        payload['css'] = url_for(theme_package_path('style.css')) if File.file?(theme_package_path('style.css'))
         payload
       end
 
@@ -80,7 +80,7 @@ module ZendeskAppsTools
 
       def value_for_setting(type, value)
         return value unless type == 'file'
-        return url_for(theme_package_path(value))
+        url_for(theme_package_path(value))
       end
 
       def url_for(package_file)
@@ -93,11 +93,8 @@ module ZendeskAppsTools
       def recursive_pathname_split(relative_path)
         split_path = relative_path.split
         joined_directories = split_path[0]
-        if split_path[0] == joined_directories.split[0]
-          return split_path
-        else
-          return [*recursive_pathname_split(joined_directories), split_path[1]]
-        end
+        return split_path if split_path[0] == joined_directories.split[0]
+        [*recursive_pathname_split(joined_directories), split_path[1]]
       end
     end
   end
