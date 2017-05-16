@@ -19,12 +19,13 @@ module ZendeskAppsTools
       setup_path(options[:path])
       ensure_manifest!
       require 'faraday'
-      initial_upload
+      full_upload
+      start_listener
       start_server
     end
 
     no_commands do
-      def initial_upload
+      def full_upload
         say_status 'Generating', 'Generating theme from local files'
         payload = generate_payload.merge(role: options[:role])
         say_status 'Generating', 'OK'
@@ -39,6 +40,23 @@ module ZendeskAppsTools
         say_status 'Uploading', 'OK'
       rescue Faraday::Error::ClientError => e
         say_error_and_exit e.message
+      end
+
+      def start_listener
+        # TODO: do we need to stop the listener at some point?
+        require 'listen'
+        path = Pathname.new(theme_package_path('.')).cleanpath
+        listener = ::Listen.to(path, ignore: /\.zat/) do |modified, added, removed|
+          need_upload = false
+          if modified.any? { |file| file[/templates/] }
+            need_upload = true
+          end
+          if added.any? || removed.any?
+            need_upload = true
+          end
+          full_upload if need_upload
+        end
+        listener.start
       end
 
       def generate_payload
