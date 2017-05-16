@@ -10,7 +10,7 @@ module ZendeskAppsTools
     include Thor::Actions
     include ZendeskAppsTools::CommandHelpers
 
-    map %w(-v) => :version
+    map %w[-v] => :version
 
     source_root File.expand_path(File.join(File.dirname(__FILE__), '../..'))
 
