@@ -8,7 +8,7 @@ module ZendeskAppsTools
     class Server < Sinatra::Base
       include Common
 
-      get '/websocket' do
+      get '/livereload' do
         if Faye::WebSocket.websocket?(env)
           ws = Faye::WebSocket.new(env)
 
