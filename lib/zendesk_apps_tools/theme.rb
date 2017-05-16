@@ -80,11 +80,6 @@ module ZendeskAppsTools
 
       alias_method :ensure_manifest!, :manifest
 
-      def javascript
-        filename = theme_package_path('script.js')
-        @javascript ||= File.read(filename) if File.exist?(filename)
-      end
-
       def start_server
         require 'zendesk_apps_tools/theming/server'
         ZendeskAppsTools::Theming::Server.tap do |server|
