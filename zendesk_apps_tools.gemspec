@@ -24,6 +24,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'listen', '~> 2.10'
   s.add_runtime_dependency 'rack-livereload'
   s.add_runtime_dependency 'faye-websocket'
+  s.add_runtime_dependency 'thin'
 
   s.add_development_dependency 'cucumber'
   s.add_development_dependency 'aruba'
