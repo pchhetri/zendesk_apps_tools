@@ -24,12 +24,20 @@ module ZendeskAppsTools
             serverName: 'ZAT LiveReload 2'
           ))
 
+          new_callback = -> { ws.send(JSON.dump(command: 'reload')) }
+          settings.callback_map[ws] = new_callback
+          settings.callbacks_after_load.push(new_callback)
+
           ws.onmessage do |event|
             ws.send(event.data)
           end
 
           ws.onclose do |event|
             p [:close, event.code, event.reason]
+            settings.callbacks_after_load.delete_if do |entry|
+              entry == settings.callback_map[ws]
+            end
+            settings.callback_map.delete ws
             ws = nil
           end
 

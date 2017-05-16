@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'zendesk_apps_tools/theming/common'
+require 'thin'
 
 module ZendeskAppsTools
   class Theme < Thor
@@ -20,8 +21,9 @@ module ZendeskAppsTools
       ensure_manifest!
       require 'faraday'
       full_upload
-      start_listener
-      start_server
+      callbacks_after_upload = []
+      start_listener(callbacks_after_upload)
+      start_server(callbacks_after_upload)
     end
 
     no_commands do
@@ -44,7 +46,7 @@ module ZendeskAppsTools
         say_error_and_exit e.message
       end
 
-      def start_listener
+      def start_listener(callbacks_after_upload)
         # TODO: do we need to stop the listener at some point?
         require 'listen'
         path = Pathname.new(theme_package_path('.')).cleanpath
@@ -56,7 +58,10 @@ module ZendeskAppsTools
           if added.any? || removed.any?
             need_upload = true
           end
-          full_upload if need_upload
+          if need_upload
+            full_upload
+            callbacks_after_upload.each(&:call)
+          end
         end
         listener.start
       end
@@ -80,7 +85,7 @@ module ZendeskAppsTools
 
       alias_method :ensure_manifest!, :manifest
 
-      def start_server
+      def start_server(callbacks_after_upload)
         require 'zendesk_apps_tools/theming/server'
         require 'rack-livereload'
         require 'faye/websocket'
@@ -91,6 +96,8 @@ module ZendeskAppsTools
           server.set :port, options[:port]
           server.set :root, app_dir
           server.set :public_folder, app_dir
+          server.set :callbacks_after_load, callbacks_after_upload
+          server.set :callback_map, {}
           server.use Rack::LiveReload, live_reload_port: 4567
           server.run!
         end
