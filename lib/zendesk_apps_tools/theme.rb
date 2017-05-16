@@ -39,6 +39,7 @@ module ZendeskAppsTools
         end
         say_status 'Uploading', 'OK'
         say_status 'Ready', "#{connection.url_prefix}hc/local_preview"
+        say "To exit preview mode, visit: #{connection.url_prefix}hc/local_preview?finish"
       rescue Faraday::Error::ClientError => e
         say_error_and_exit e.message
       end
