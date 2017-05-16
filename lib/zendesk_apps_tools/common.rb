@@ -26,10 +26,10 @@ module ZendeskAppsTools
 
       def sinatra_options(except: [])
         unless except.include? :port
-          method_option :port, default: DEFAULT_SERVER_PORT, required: false
+          method_option :port, default: DEFAULT_SERVER_PORT, required: false, desc: 'Port for the http server to use.'
         end
         unless except.include? :bind
-          method_option :bind, required: false
+          method_option :bind, required: false, desc: 'Hostname or IP address for the server to listen on.'
         end
       end
     end
