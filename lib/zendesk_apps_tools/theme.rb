@@ -45,7 +45,16 @@ module ZendeskAppsTools
         say_status 'Ready', "#{connection.url_prefix}hc/local_preview"
         say "To exit preview mode, visit: #{connection.url_prefix}hc/local_preview?finish"
       rescue Faraday::Error::ClientError => e
-        say_error_and_exit e.message
+        say_status 'Uploading', "Failed: #{e.message}", :red
+        begin
+          broken_templates = JSON.parse(e.response[:body])['template_errors']
+          broken_templates.each do |template_name, errors|
+            errors.each do |error|
+              say_status 'Error', "#{template_name} L#{error['line']}:#{error['column']}: #{error['description']}", :red
+            end
+          end
+        rescue JSON::ParserError
+        end
       end
 
       def start_listener(callbacks_after_upload)
