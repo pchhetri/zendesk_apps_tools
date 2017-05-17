@@ -54,6 +54,7 @@ module ZendeskAppsTools
             end
           end
         rescue JSON::ParserError
+          say_status 'Error', 'Server error 😭', :red
         end
       end
 
