@@ -47,14 +47,19 @@ module ZendeskAppsTools
       rescue Faraday::Error::ClientError => e
         say_status 'Uploading', "Failed: #{e.message}", :red
         begin
-          broken_templates = JSON.parse(e.response[:body])['template_errors']
-          broken_templates.each do |template_name, errors|
-            errors.each do |error|
-              say_status 'Error', "#{template_name} L#{error['line']}:#{error['column']}: #{error['description']}", :red
+          error_hash = JSON.parse(e.response[:body])
+          broken_templates = error_hash['template_errors']
+          if broken_templates
+            broken_templates.each do |template_name, errors|
+              errors.each do |error|
+                say_status 'Error', "#{template_name} L#{error['line']}:#{error['column']}: #{error['description']}", :red
+              end
             end
+          else
+            say_status 'Error', error_hash
           end
         rescue JSON::ParserError
-          say_status 'Error', 'Server error 😭', :red
+          say_error_and_exit 'Server error 😭'
         end
       end
 

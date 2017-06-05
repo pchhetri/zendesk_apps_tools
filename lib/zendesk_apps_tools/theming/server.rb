@@ -34,7 +34,6 @@ module ZendeskAppsTools
           end
 
           ws.onclose = lambda do |event|
-            p [:close, event.code, event.reason]
             settings.callbacks_after_load.delete_if do |entry|
               entry == settings.callback_map[ws]
             end
