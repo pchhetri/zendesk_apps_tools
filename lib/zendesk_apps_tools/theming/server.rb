@@ -12,7 +12,7 @@ module ZendeskAppsTools
         if settings.livereload && Faye::WebSocket.websocket?(env)
           ws = Faye::WebSocket.new(env)
 
-          new_callback = ->(filename) { ws.send(JSON.dump(command: 'reload', path: filename)) }
+          new_callback = ->() { ws.send(JSON.dump(command: 'reload', path: '')) }
           settings.callback_map[ws] = new_callback
           settings.callbacks_after_load.push(new_callback)
 
@@ -54,7 +54,7 @@ module ZendeskAppsTools
         raise Sinatra::NotFound unless File.exist?(style_css)
         zass_source = File.read(style_css)
         require 'zendesk_apps_tools/theming/zass_formatter'
-        response = ZassFormatter.format(zass_source, settings_hash)
+        response = ZassFormatter.format(zass_source, settings_hash.merge(assets_hash))
         response
       end
 
@@ -66,17 +66,6 @@ module ZendeskAppsTools
 
       def app_dir
         settings.root
-      end
-
-      def settings_hash
-        manifest['settings'].flat_map { |setting_group| setting_group['variables'] }.each_with_object({}) do |variable, result|
-          result[variable.fetch('identifier')] = value_for_setting(variable.fetch('type'), variable.fetch('value'))
-        end
-      end
-
-      def value_for_setting(type, value)
-        return value unless type == 'file'
-        url_for(theme_package_path(value))
       end
     end
   end

@@ -69,7 +69,7 @@ module ZendeskAppsTools
         path = Pathname.new(theme_package_path('.')).cleanpath
         listener = ::Listen.to(path, ignore: /\.zat/) do |modified, added, removed|
           need_upload = false
-          if modified.any? { |file| file[/templates/] }
+          if modified.any? { |file| file[/templates|manifest/] }
             need_upload = true
           end
           if added.any? || removed.any?
@@ -79,7 +79,7 @@ module ZendeskAppsTools
             full_upload
           end
           callbacks_after_upload.each do |callback|
-            callback.call(modified.first || added.first || removed.first)
+            callback.call
           end
         end
         listener.start
@@ -92,14 +92,37 @@ module ZendeskAppsTools
         templates.each do |template|
           templates_payload[File.basename(template, '.hbs')] = File.read(template)
         end
-        assets = Dir.glob(theme_package_path('assets', '*'))
-        asset_payload = {}
-        assets.each do |asset|
-          asset_payload[File.basename(asset)] = url_for(asset)
-        end
-        payload['templates'] = templates_payload unless templates_payload.empty? && asset_payload.empty?
-        payload['templates']['assets'] = JSON.dump(asset_payload) unless asset_payload.empty?
+        payload['templates'] = templates_payload
+        payload['templates']['document_head'] = inject_external_tags(payload['templates']['document_head'])
+        payload['templates']['css'] = ''
+        payload['templates']['js'] = ''
+        payload['templates']['assets'] = assets
+        payload['templates']['variables'] = settings_hash
         payload
+      end
+
+      def inject_external_tags(head_template)
+        live_reload_script_tag = <<-html
+          <script type="text/javascript">
+            RACK_LIVERELOAD_PORT = 4567;
+          </script>
+          <script src="http://localhost:4567/__rack/livereload.js?host=localhost"></script>
+        html
+
+        js_tag = <<-html
+          <script src="http://localhost:4567/guide/script.js"></script>
+        html
+
+        css_tag = <<-html
+          <link rel="stylesheet" type="text/css" href="http://localhost:4567/guide/style.css">
+        html
+
+        template = StringIO.new
+        template << css_tag
+        template << head_template
+        template << js_tag
+        template << live_reload_script_tag
+        template.string
       end
 
       alias_method :ensure_manifest!, :manifest

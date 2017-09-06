@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
-require 'sass/util'
-require 'sass/script'
+require 'sass'
 require 'English'
 
 module ZendeskAppsTools
