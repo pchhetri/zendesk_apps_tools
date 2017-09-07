@@ -42,7 +42,8 @@ module ZendeskAppsTools
           req.headers['Content-Type'] = 'application/json'
         end
         say_status 'Uploading', 'OK'
-        say_status 'Ready', "#{connection.url_prefix}hc/local_preview"
+        say_status 'Ready', "#{connection.url_prefix}hc/admin/local_preview/start"
+        say "You can exit preview mode in the UI or by visiting #{connection.url_prefix}hc/admin/local_preview/stop"
       rescue Faraday::Error::ClientError => e
         say_status 'Uploading', "Failed: #{e.message}", :red
         begin
